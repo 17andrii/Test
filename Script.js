@@ -1,32 +1,103 @@
-let money = 0;
-const moneyDisplay = document.getElementById("money");
-const resultText = document.getElementById("result");
-const wheel = document.getElementById("wheel");
+const canvas = document.getElementById("wheelCanvas");
+const ctx = canvas.getContext("2d");
+const moneyEl = document.getElementById("money");
+const resultEl = document.getElementById("result");
+const rollBtn = document.getElementById("rollBtn");
 
-// Earn 1€ per second
+let money = Number(localStorage.getItem("money")) || 0;
+let angle = 0;
+let spinning = false;
+
+const rewards = [0, 5, 10, 25, 50, -10, -25];
+const colors = ["#444", "#00ffcc", "#00ff00", "#ffaa00", "#ff00ff", "#ff3333", "#aa0000"];
+
+moneyEl.textContent = money;
+
+// 💰 Earn 1€ per second (FIXED)
 setInterval(() => {
     money += 1;
-    moneyDisplay.textContent = money;
+    updateMoney();
 }, 1000);
 
-function rollWheel() {
-    const rewards = [-20, -10, 0, 5, 10, 25, 50];
-    const reward = rewards[Math.floor(Math.random() * rewards.length)];
+// 🎡 Draw wheel
+function drawWheel() {
+    const slices = rewards.length;
+    const sliceAngle = (2 * Math.PI) / slices;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    for (let i = 0; i < slices; i++) {
+        ctx.beginPath();
+        ctx.moveTo(150, 150);
+        ctx.fillStyle = colors[i];
+        ctx.arc(150, 150, 140, angle + i * sliceAngle, angle + (i + 1) * sliceAngle);
+        ctx.fill();
+
+        ctx.save();
+        ctx.translate(150, 150);
+        ctx.rotate(angle + (i + 0.5) * sliceAngle);
+        ctx.fillStyle = "white";
+        ctx.font = "18px Arial";
+        ctx.fillText(rewards[i] + "€", 60, 5);
+        ctx.restore();
+    }
+}
+
+drawWheel();
+
+// 🎰 Roll logic
+rollBtn.addEventListener("click", () => {
+    if (spinning) return;
+
+    spinning = true;
+    rollBtn.disabled = true;
+    resultEl.textContent = "";
+
+    let spinTime = 0;
+    let spinSpeed = Math.random() * 0.3 + 0.35;
+
+    const spinInterval = setInterval(() => {
+        angle += spinSpeed;
+        spinSpeed *= 0.98;
+        spinTime++;
+
+        drawWheel();
+
+        if (spinSpeed < 0.002) {
+            clearInterval(spinInterval);
+            finishSpin();
+        }
+    }, 16);
+});
+
+function finishSpin() {
+    const sliceAngle = (2 * Math.PI) / rewards.length;
+    const index = Math.floor(((2 * Math.PI - angle) % (2 * Math.PI)) / sliceAngle);
+    const reward = rewards[index];
 
     money += reward;
     if (money < 0) money = 0;
 
-    moneyDisplay.textContent = money;
-
-    // Spin animation
-    wheel.style.transform = `rotate(${Math.floor(Math.random() * 360 + 720)}deg)`;
+    updateMoney();
 
     if (reward > 0) {
-        resultText.textContent = `🎉 You won ${reward} €!`;
+        resultEl.textContent = `🎉 YOU WON ${reward}€`;
     } else if (reward < 0) {
-        resultText.textContent = `💀 You lost ${Math.abs(reward)} €!`;
+        resultEl.textContent = `💀 YOU LOST ${Math.abs(reward)}€`;
+        document.body.classList.add("shake");
+        setTimeout(() => document.body.classList.remove("shake"), 300);
     } else {
-        resultText.textContent = `😐 Nothing happened.`;
+        resultEl.textContent = `😐 NO REWARD`;
     }
+
+    spinning = false;
+    rollBtn.disabled = false;
 }
+
+// 💾 Save money
+function updateMoney() {
+    moneyEl.textContent = money;
+    localStorage.setItem("money", money);
+}
+
 
