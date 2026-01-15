@@ -1,136 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Simple HTML Game</title>
-
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #111;
-      color: white;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-
-    #game {
-      position: relative;
-      width: 400px;
-      height: 600px;
-      background: #222;
-      border: 3px solid #fff;
-      overflow: hidden;
-    }
-
-    #score {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 18px;
-      z-index: 10;
-    }
-
-    .box {
-      position: absolute;
-      width: 50px;
-      height: 50px;
-      background: crimson;
-      cursor: pointer;
-      border-radius: 6px;
-    }
-
-    #gameOver {
-      position: absolute;
-      inset: 0;
-      background: rgba(0, 0, 0, 0.8);
-      display: none;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      font-size: 24px;
-    }
-
-    button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <title>Jackpot Wheel Game</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-  <div id="game">
-    <div id="score">Score: 0</div>
-    <div id="gameOver">
-      <div>Game Over</div>
-      <button onclick="restartGame()">Restart</button>
+    <h1>🎰 Jackpot Wheel</h1>
+
+    <div class="balance">
+        Balance: <span id="money">0</span> €
     </div>
-  </div>
 
-  <script>
-    const game = document.getElementById("game");
-    const scoreText = document.getElementById("score");
-    const gameOverScreen = document.getElementById("gameOver");
+    <div class="wheel" id="wheel">
+        🎡
+    </div>
 
-    let score = 0;
-    let misses = 0;
-    let gameRunning = true;
+    <button onclick="rollWheel()">Roll Wheel</button>
 
-    function createBox() {
-      if (!gameRunning) return;
+    <p id="result"></p>
 
-      const box = document.createElement("div");
-      box.classList.add("box");
-
-      box.style.left = Math.random() * 350 + "px";
-      box.style.top = "-50px";
-
-      game.appendChild(box);
-
-      let speed = 2 + score * 0.1;
-
-      const fall = setInterval(() => {
-        box.style.top = box.offsetTop + speed + "px";
-
-        if (box.offsetTop > 600) {
-          clearInterval(fall);
-          box.remove();
-          misses++;
-
-          if (misses >= 3) {
-            endGame();
-          }
-        }
-      }, 16);
-
-      box.onclick = () => {
-        score++;
-        scoreText.textContent = "Score: " + score;
-        clearInterval(fall);
-        box.remove();
-      };
-    }
-
-    function endGame() {
-      gameRunning = false;
-      gameOverScreen.style.display = "flex";
-    }
-
-    function restartGame() {
-      score = 0;
-      misses = 0;
-      gameRunning = true;
-      scoreText.textContent = "Score: 0";
-      gameOverScreen.style.display = "none";
-    }
-
-    setInterval(createBox, 1000);
-  </script>
-
+    <script src="script.js"></script>
 </body>
 </html>
 
